@@ -1,0 +1,55 @@
+.cardRow {
+    background-color: lightgray;
+    border-radius: 50px;
+    border: #ed6337 1px solid;
+}
+
+.cardRow:hover {
+    background-color: antiquewhite;
+    cursor: pointer;
+}
+
+.add-meeting-btn {
+    border-radius: 15px;
+    background-color: #ed6337;
+    color: white;
+    border: none;
+    padding: 10px;
+    justify-content: center;
+}
+
+.add-meeting-btn:hover {
+    background-color: #f84e15;
+}
+
+.bold-text {
+    font-weight: 700;
+}
+
+.sup-text {
+    font-weight: lighter;
+}
+
+.loader {
+    border: 16px solid #7d7e84;
+    border-radius: 50%;
+    border-top: 16px solid #ed6337;
+    border-bottom: 16px solid #ed6337;
+    width: 120px;
+    height: 120px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
