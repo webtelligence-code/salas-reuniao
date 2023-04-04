@@ -5,11 +5,11 @@ const meetings = [];
 
 // Grab root container that will be populated with the meetings
 const meetingsContainer = document.getElementById('meetings-container');
-
 // Grab theloading overlay div
 const loadingOverlay = document.getElementById('loading-overlay');
 
 const getSessionUsername = () => {
+    loadingOverlay.style.display = 'block'; // Show loading overlay
     $.get('api/index.php?action=get_username', (data, status) => {
         if (status === 'success') {
             // API call success
@@ -26,7 +26,6 @@ getSessionUsername(); // Grab the current session USERNAME via ajax call
 
 // Function to call api to fetch all meetings
 const getMeetings = () => {
-    loadingOverlay.style.display = 'block'; // Show loading overlay
     $.get('api/index.php?action=get_meetings', (data, status) => {
         if (status === 'success') {
             // Api call success
@@ -50,37 +49,47 @@ const populateMeetingsContainer = () => {
     // Loop through meetings array and populate each meeting
     meetings.forEach((meeting, index) => {
         const divRow = document.createElement('div'); // Create div with row class (bootstrap)
-        divRow.className = 'row align-items-center p-2 m-3 cardRow'; // Add required classes
 
         // Condition to verify if session USERNAME matches meeting row 
         const showEditDeleteButtons = sessionUsername === meeting.organizador;
 
+        // Formatted date and time
+        const formattedDate = moment(meeting.data).format('DD/MM/YYYY');
+        const formattedHoraInicio = moment(meeting.hora_inicio, 'HH:mm:ss').format('HH:mm');
+        const formattedHoraFim = moment(meeting.hora_fim, 'HH:mm:ss').format('HH:mm');
+
         // If true, show edit/delete buttons
         const editDeleteButtons = showEditDeleteButtons ? `
-            <div class='col-12 col text-center'>
-                <button id='edit-meeting-${index}' class='btn btn-primary'>Edit</button>
-                <button id='delete-meeting-${index}' class='btn btn-danger'>Delete</button>
+            <div class='col-sm-12 col-md mt-3'>
+                <button id='edit-meeting-${index}' class='btn btn-primary'>Editar</button>
+                <button id='delete-meeting-${index}' class='btn btn-danger'>Remover</button>
             </div>
         ` : '';
 
         // Populate row inner HTML
         divRow.innerHTML = `
-            <div class='col-12 col-md-4 text-center'>
-                <img class='rounded-circle' src='${meeting.url_imagem}' height='75px'/>
+            <div class='card mt-3'>
+                <div class='row g-0 align-items-center'>
+                    <div class='col-sm-12 col-md-4 text-center text-md-start'>
+                        <img src='${meeting.url_imagem}' class='img-fluid rounded meeting-image'/>
+                    </div>
+                    <div class='col-sm-12 col-md-8 text-center text-md-start'>
+                        <div class='card-body'>
+                            <div class='row align-items-center'>
+                                <div class='col-sm-12 col-md'>
+                                    <h3 class='card-title' style='color: #ed6337'>${meeting.motivo}</h3>
+                                    <p class='card-text'><strong>Data:</strong> ${formattedDate}</p>
+                                    <p class='card-text'><strong>Hora: </strong>${formattedHoraInicio}h - ${formattedHoraFim}h</p>
+                                    <p class='card-text'><strong>Sala:</strong> ${meeting.sala}</p>
+                                </div>
+                                ${editDeleteButtons}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class='col-12 col-md-4 text-center'>
-                <div class='bold-text'>${meeting.hora_inicio} - ${meeting.hora_fim}</div>
-                <div class='sup-text'>${meeting.data}</div>
-            </div>
-            <div class='col-12 col-md-4 text-center'>
-                <div class='bold-text'>${meeting.motivo}</div>
-                <div class='sup-text'>${meeting.sala}</div>
-            </div>
-            ${editDeleteButtons}
         `;
         meetingsContainer.appendChild(divRow); // Append row HTML to parent container
-
-        loadingOverlay.style.display = 'none'; // Hide loading overlay
 
         // Condition to add event listener (if aplicable) for each edit/delete button
         if (showEditDeleteButtons) {
@@ -90,6 +99,8 @@ const populateMeetingsContainer = () => {
             editBtn.addEventListener('click', () => goToEditMeetingPage(meeting));
             deleteBtn.addEventListener('click', () => deleteMeeting(meeting));
         }
+
+        loadingOverlay.style.display = 'none'; // Hide loading overlay
     });
 }
 
@@ -99,9 +110,8 @@ const populateMeetingsContainer = () => {
  * @param {object} meeting 
  */
 const goToEditMeetingPage = (meeting) => {
-    document.getElementById('loading-overlay').style.display = 'block' // Show spinner
     localStorage.setItem('selectedMeeting', JSON.stringify(meeting)); // Save meeting oobject to local storage
-    window.location.href = 'addEditMeeting.php'; // Navigate to edit meeting
+    window.location.href = 'addEditMeeting.html'; // Navigate to edit meeting
 }
 
 /**
@@ -111,3 +121,7 @@ const goToEditMeetingPage = (meeting) => {
 const deleteMeeting = (meeting) => {
     console.log('You are going to delete ->', meeting)
 }
+
+window.onbeforeunload = () => {
+    loadingOverlay.style.display = 'none'; // Hide the loading spinner before leaving page
+};

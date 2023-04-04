@@ -30,6 +30,12 @@
     font-weight: lighter;
 }
 
+.meeting-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .loader {
     border: 16px solid #7d7e84;
     border-radius: 50%;
