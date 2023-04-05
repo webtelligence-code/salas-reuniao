@@ -20,6 +20,10 @@ switch ($method) {
                 $meetings = getMeetings();
                 echo json_encode($meetings);
                 break;
+            case 'get_rooms':
+                $rooms = getRooms();
+                echo json_encode($rooms);
+                break;
         }
         break;
 }

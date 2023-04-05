@@ -1,0 +1,11 @@
+.add-edit-meeting-btn {
+    border-radius: 25px;
+    background-color: #ed6337;
+    padding: 8px;
+    color: white;
+    border: none;
+}
+
+.c-input {
+    border: #ed6337 1px solid;
+}

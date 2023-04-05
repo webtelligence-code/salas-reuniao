@@ -3,10 +3,14 @@ let sessionUsername;
 // Meetings array
 const meetings = [];
 
+// Grab the add meeting button id
+const addMeetingBtn = document.getElementById('add-meeting-btn');
 // Grab root container that will be populated with the meetings
 const meetingsContainer = document.getElementById('meetings-container');
 // Grab theloading overlay div
 const loadingOverlay = document.getElementById('loading-overlay');
+
+addMeetingBtn.addEventListener('click', () => goToAddEditMeetingPage(null));
 
 const getSessionUsername = () => {
     loadingOverlay.style.display = 'block'; // Show loading overlay
@@ -68,7 +72,7 @@ const populateMeetingsContainer = () => {
 
         // Populate row inner HTML
         divRow.innerHTML = `
-            <div class='card mt-3'>
+            <div class='card my-3 c-card'>
                 <div class='row g-0 align-items-center'>
                     <div class='col-sm-12 col-md-4 text-center text-md-start'>
                         <img src='${meeting.url_imagem}' class='img-fluid rounded meeting-image'/>
@@ -96,7 +100,7 @@ const populateMeetingsContainer = () => {
             const editBtn = document.getElementById(`edit-meeting-${index}`);
             const deleteBtn = document.getElementById(`delete-meeting-${index}`);
 
-            editBtn.addEventListener('click', () => goToEditMeetingPage(meeting));
+            editBtn.addEventListener('click', () => goToAddEditMeetingPage(meeting));
             deleteBtn.addEventListener('click', () => deleteMeeting(meeting));
         }
 
@@ -107,11 +111,17 @@ const populateMeetingsContainer = () => {
 /**
  * Function that will navigate to addEditMeeting page and pass meeting object to localstorage to grab
  * meeting object and populate the other page form with the correct data.
+ * If no object is passed through this function, it will navigate to addEditMeeting.html
+ * to add a new meeting.
  * @param {object} meeting 
  */
-const goToEditMeetingPage = (meeting) => {
-    localStorage.setItem('selectedMeeting', JSON.stringify(meeting)); // Save meeting oobject to local storage
-    window.location.href = 'addEditMeeting.html'; // Navigate to edit meeting
+const goToAddEditMeetingPage = (meeting) => {
+    if (meeting) {
+        localStorage.setItem('selectedMeeting', JSON.stringify(meeting)); // Save meeting oobject to local storage
+    } else {
+        localStorage.removeItem('selectedMeeting'); // Remove localStorage object set if meeting object is null
+    }
+    window.location.href = 'addEditMeeting.html'; // Navigate to add/edit meeting
 }
 
 /**
@@ -119,7 +129,7 @@ const goToEditMeetingPage = (meeting) => {
  * @param {object} meeting 
  */
 const deleteMeeting = (meeting) => {
-    console.log('You are going to delete ->', meeting)
+    alert(`You are going to delete meeting -> ${meeting}`);
 }
 
 window.onbeforeunload = () => {

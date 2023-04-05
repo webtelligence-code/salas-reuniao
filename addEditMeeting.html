@@ -1,17 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adicionar Reunião</title>
+    <title>Reunião</title>
+    <!-- Add your CSS and other necessary files -->
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/addEditMeeting.css">
 </head>
+<body class="container">
+    <h1 style="color: #ed6337" id="form-title"></h1>
 
-<body>
+    <!-- Meeting Form for add/edit-->
+    <form id="meeting-form">
+        <label style="font-weight: 600;" for="motivo" class="form-label">Motivo:</label>
+        <input class="form-control c-input" type="text" id="motivo" name="motivo" required>
 
+        <label style="font-weight: 600;" for="data" class="form-label">Data:</label>
+        <input class="form-control c-input" type="date" id="data" name="data" required>
+
+        <label style="font-weight: 600;" for="hora_inicio" class="form-label">Hora Inicio:</label>
+        <input class="form-control c-input" type="time" id="hora_inicio" name="hora_inicio" required>
+
+        <label style="font-weight: 600;" for="hora_fim" class="form-label">Hora Fim:</label>
+        <input class="form-control c-input" type="time" id="hora_fim" name="hora_fim" required>
+
+        <label style="font-weight: 600;" for="sala" class="form-label">Sala:</label>
+        <select class="form-select c-input" id="sala">
+            <option selected>Escolha uma sala</option>
+        </select>
+
+        <button type="submit" id="add-edit-meeting-btn" class="add-edit-meeting-btn mt-3"></button>
+    </form>
+
+    <!-- Add your JavaScript files -->
+    <script src="assets/js/jquery-3.6.4.js"></script>
+    <script src="assets/bootstrap/css/bootstrap.min.css"></script>
+    <script src="assets/bootstrap/js/bootstrap.bundle.js"></script>
+    <script src="js/addEditMeeting.js"></script>
 </body>
-
-<script src="js/editMeeting.js"></script>
-
 </html>

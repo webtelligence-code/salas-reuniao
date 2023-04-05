@@ -7,7 +7,9 @@ include 'session.php';
 $databaseObj = new DatabaseConnect;
 $conn = $databaseObj->connect();
 
-function getUsername() {
+// Function that will fetch session username
+function getUsername()
+{
     return $_SESSION['USERNAME'];
 }
 
@@ -29,4 +31,16 @@ function getMeetings()
     $meetings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     return $meetings;
+}
+
+// Function that will fetch all rooms available in the database
+function getRooms()
+{
+    global $conn;
+    $sql = 'SELECT * FROM salas';
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return $rooms;
 }
