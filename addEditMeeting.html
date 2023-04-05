@@ -6,7 +6,7 @@
     <title>Reunião</title>
     <!-- Add your CSS and other necessary files -->
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/addEditMeeting.css">
+    <link rel="stylesheet" href="css/addEditMeeting.css">
 </head>
 <body class="container">
     <h1 style="color: #ed6337" id="form-title"></h1>
@@ -20,10 +20,19 @@
         <input class="form-control c-input" type="date" id="data" name="data" required>
 
         <label style="font-weight: 600;" for="hora_inicio" class="form-label">Hora Inicio:</label>
-        <input class="form-control c-input" type="time" id="hora_inicio" name="hora_inicio" required>
+        <input class="form-control c-input" type="time" id="hora_inicio" name="hora_inicio" step="1800" required>
 
-        <label style="font-weight: 600;" for="hora_fim" class="form-label">Hora Fim:</label>
-        <input class="form-control c-input" type="time" id="hora_fim" name="hora_fim" required>
+        <label style="font-weight: 600;" for="duration" class="form-label">Duração:</label>
+        <select class="form-select c-input" id="duration" name="duration">
+            <option value="30">00:30h</option>
+            <option value="60">01:00h</option>
+            <option value="90">01:30h</option>
+            <option value="120">02:00h</option>
+            <option value="150">02:30h</option>
+            <option value="180">03:00h</option>
+            <option value="210">03:30h</option>
+            <option value="240">04:00h</option>
+        </select>
 
         <label style="font-weight: 600;" for="sala" class="form-label">Sala:</label>
         <select class="form-select c-input" id="sala">
@@ -33,7 +42,6 @@
         <button type="submit" id="add-edit-meeting-btn" class="add-edit-meeting-btn mt-3"></button>
     </form>
 
-    <!-- Add your JavaScript files -->
     <script src="assets/js/jquery-3.6.4.js"></script>
     <script src="assets/bootstrap/css/bootstrap.min.css"></script>
     <script src="assets/bootstrap/js/bootstrap.bundle.js"></script>
