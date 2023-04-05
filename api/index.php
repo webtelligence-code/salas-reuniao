@@ -24,6 +24,10 @@ switch ($method) {
                 $rooms = getRooms();
                 echo json_encode($rooms);
                 break;
+            case 'get_users':
+                $users = getUsers();
+                echo json_encode($users);
+                break;
         }
         break;
 }

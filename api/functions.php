@@ -44,3 +44,14 @@ function getRooms()
 
     return $rooms;
 }
+
+// Function that will fetch all users (guests) from the database
+function getUsers() {
+    global $conn;
+    $sql = 'SELECT * FROM users ORDER BY NAME ASC';
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return $users;
+}

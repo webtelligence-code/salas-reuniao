@@ -1,50 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reunião</title>
     <!-- Add your CSS and other necessary files -->
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/select2.min.css">
+    <link rel="stylesheet" href="assets/css/select2-bootstrap-5-theme.min.css">
     <link rel="stylesheet" href="css/addEditMeeting.css">
 </head>
+
 <body class="container">
     <h1 style="color: #ed6337" id="form-title"></h1>
 
-    <!-- Meeting Form for add/edit-->
-    <form id="meeting-form">
-        <label style="font-weight: 600;" for="motivo" class="form-label">Motivo:</label>
-        <input class="form-control c-input" type="text" id="motivo" name="motivo" required>
+    <div class="card c-card">
+        <div class="card-body">
 
-        <label style="font-weight: 600;" for="data" class="form-label">Data:</label>
-        <input class="form-control c-input" type="date" id="data" name="data" required>
+            <!-- Meeting Form for add/edit-->
+            <form id="meeting-form">
+                <label style="font-weight: 600;" for="motivo" class="form-label">Motivo:</label>
+                <input class="form-control c-input" type="text" id="motivo" name="motivo" required>
 
-        <label style="font-weight: 600;" for="hora_inicio" class="form-label">Hora Inicio:</label>
-        <input class="form-control c-input" type="time" id="hora_inicio" name="hora_inicio" step="1800" required>
+                <label style="font-weight: 600;" for="data" class="form-label">Data:</label>
+                <input class="form-control c-input" type="date" id="data" name="data" required>
 
-        <label style="font-weight: 600;" for="duration" class="form-label">Duração:</label>
-        <select class="form-select c-input" id="duration" name="duration">
-            <option value="30">00:30h</option>
-            <option value="60">01:00h</option>
-            <option value="90">01:30h</option>
-            <option value="120">02:00h</option>
-            <option value="150">02:30h</option>
-            <option value="180">03:00h</option>
-            <option value="210">03:30h</option>
-            <option value="240">04:00h</option>
-        </select>
+                <label style="font-weight: 600;" for="hora_inicio" class="form-label">Hora Inicio:</label>
+                <input class="form-control c-input" type="time" id="hora_inicio" name="hora_inicio" step="1800"
+                    required>
 
-        <label style="font-weight: 600;" for="sala" class="form-label">Sala:</label>
-        <select class="form-select c-input" id="sala">
-            <option selected>Escolha uma sala</option>
-        </select>
+                <label style="font-weight: 600;" for="duration" class="form-label">Duração:</label>
+                <select class="form-select c-input" id="duration" name="duration">
+                    <option value="30">00:30h</option>
+                    <option value="60">01:00h</option>
+                    <option value="90">01:30h</option>
+                    <option value="120">02:00h</option>
+                    <option value="150">02:30h</option>
+                    <option value="180">03:00h</option>
+                    <option value="210">03:30h</option>
+                    <option value="240">04:00h</option>
+                </select>
 
-        <button type="submit" id="add-edit-meeting-btn" class="add-edit-meeting-btn mt-3"></button>
-    </form>
+                <label style="font-weight: 600;" for="sala" class="form-label">Sala:</label>
+                <select class="form-select c-input" id="sala">
+                    <option selected>Escolha uma sala</option>
+                </select>
+
+                <label style="font-weight: 600;" for="users" class="form-label">Convidados:</label>
+                <select class="custom-select2" id="users" data-placeholder="Selecione os convidados" multiple>
+                </select>
+
+                <button type="submit" id="add-edit-meeting-btn" class="add-edit-meeting-btn mt-3"></button>
+                <button type="button" id="cancel-btn" class="cancel-btn ms-2 mt-3">Cancelar</button>
+            </form>
+        </div>
+    </div>
 
     <script src="assets/js/jquery-3.6.4.js"></script>
     <script src="assets/bootstrap/css/bootstrap.min.css"></script>
     <script src="assets/bootstrap/js/bootstrap.bundle.js"></script>
+    <script src="assets/js/select2.min.js"></script>
     <script src="js/addEditMeeting.js"></script>
 </body>
+
 </html>

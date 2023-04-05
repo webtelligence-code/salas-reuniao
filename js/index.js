@@ -117,7 +117,7 @@ const populateMeetingsContainer = () => {
  */
 const goToAddEditMeetingPage = (meeting) => {
     if (meeting) {
-        localStorage.setItem('selectedMeeting', JSON.stringify(meeting)); // Save meeting oobject to local storage
+        localStorage.setItem('selectedMeeting', JSON.stringify(meeting)); // Save meeting object to local storage
     } else {
         localStorage.removeItem('selectedMeeting'); // Remove localStorage object set if meeting object is null
     }

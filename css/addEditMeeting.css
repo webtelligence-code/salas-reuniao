@@ -1,11 +1,45 @@
-.add-edit-meeting-btn {
+.c-card {
     border-radius: 25px;
+    border-color: #ed6337;
+}
+
+.add-edit-meeting-btn {
+    border-radius: 15px;
     background-color: #ed6337;
     padding: 8px;
     color: white;
     border: none;
 }
 
+.add-edit-meeting-btn:hover {
+    background-color: #f84e15;
+}
+
+.cancel-btn {
+    border-radius: 15px;
+    background-color: firebrick;
+    padding: 8px;
+    color: white;
+    border: none;
+}
+
+.cancel-btn:hover {
+    background-color: rgb(214, 42, 42);
+}
+
 .c-input {
     border: #ed6337 1px solid;
+    border-radius: 25px;
+}
+
+/* Set the border style for the Select2 container */
+.custom-select2 + .select2-container .select2-selection {
+    border: 1px solid #ed6337; /* Change the border width, style, and color as desired */
+    border-radius: 15px; /* Change the border radius as desired */
+}
+
+/* Set the border style for the Select2 dropdown */
+.custom-select2 + .select2-container .select2-dropdown {
+    border: 1px solid #ed6337; /* Change the border width, style, and color as desired */
+    border-radius: 15px; /* Change the border radius as desired */
 }
