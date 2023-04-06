@@ -160,7 +160,7 @@ const submitMeeting = (e) => {
     e.preventDefault();
 
     // Get the form data
-    const meeting_id = selectedMeeting.id ? selectedMeeting.id : null;
+    const meeting_id = selectedMeeting ? selectedMeeting.id : null;
     const motivo = document.getElementById('motivo').value;
     const data = document.getElementById('data').value;
     const hora_inicio = document.getElementById('hora_inicio').value;

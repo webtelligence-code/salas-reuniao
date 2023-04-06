@@ -69,7 +69,7 @@ function addMeeting($meeting)
     global $conn;
 
     $meetingsSql = 'INSERT INTO reunioes (motivo, data, hora_inicio, hora_fim, organizador, id_sala)
-            VALUES (:motivo, :data, :hora_inicio, :hora_fim, :organizador, :sala)';
+                    VALUES (:motivo, :data, :hora_inicio, :hora_fim, :organizador, :sala)';
     // Add the meeting to the reunioes table
     $stmt = $conn->prepare($meetingsSql);
     $stmt->bindParam(':motivo', $meeting['motivo']);
@@ -90,7 +90,6 @@ function addMeeting($meeting)
         $stmt = $conn->prepare($guestsSql);
         $stmt->bindParam(':id_reuniao', $meeting_id);
         $stmt->bindParam(':nome_participante', $participante);
-
         $stmt->execute();
     }
 
