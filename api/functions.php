@@ -55,3 +55,40 @@ function getUsers() {
 
     return $users;
 }
+
+/**
+ * This function will handle a transaction to delete meeting in reunioes table
+ * and also delete all the participantes associated to the meeting in question
+ * @param object $meeting_id 
+ * @return bool|void 
+ * @throws PDOException 
+ */
+function deleteMeeting($meeting_id) {
+    global $conn;
+
+    try {
+        // Start a transaction
+        $conn->beginTransaction();
+
+        // Delete the associated guests
+        $guestsSql = 'DELETE FROM participantes WHERE id_reuniao = :meeting_id';
+        $stmt = $conn->prepare($guestsSql);
+        $stmt->bindParam(':meeting_id', $meeting_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Delete the meeting
+        $meetingsSql = 'DELETE FROM reunioes WHERE ID = :meeting_id';
+        $stmt = $conn->prepare($meetingsSql);
+        $stmt->bindParam(':meeting_id', $meeting_id, PDO::PARAM_INT);
+        $result = $stmt->execute();
+
+        // Commit the transaction
+        $conn->commit();
+
+        return $result;
+    } catch (PDOException $e) {
+        // Rollback the transaction if there is an error
+        $conn->rollBack();
+        error_log('Error while deleting meeting: ' . $e->getMessage());
+    }
+}

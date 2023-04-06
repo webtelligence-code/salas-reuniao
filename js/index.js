@@ -101,7 +101,7 @@ const populateMeetingsContainer = () => {
             const deleteBtn = document.getElementById(`delete-meeting-${index}`);
 
             editBtn.addEventListener('click', () => goToAddEditMeetingPage(meeting));
-            deleteBtn.addEventListener('click', () => deleteMeeting(meeting));
+            deleteBtn.addEventListener('click', () => alertDelete(meeting));
         }
 
         loadingOverlay.style.display = 'none'; // Hide loading overlay
@@ -125,11 +125,96 @@ const goToAddEditMeetingPage = (meeting) => {
 }
 
 /**
- * Function that will handle the delete meeting
+ * Function that will handle alert delete meeting
  * @param {object} meeting 
  */
+const alertDelete = (meeting) => {
+    const meetingHtml = generateMeetingHtml(meeting); // Generate meeting data html to display on sweet alert
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: 'btn btn-success ms-1',
+            cancelButton: 'btn btn-danger'
+        },
+        buttonsStyling: false
+    })
+
+    swalWithBootstrapButtons.fire({
+        title: 'De certeza que quer apagar esta reunião?',
+        html: meetingHtml,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sim, quero apagar!',
+        cancelButtonText: 'Não, cancelar!',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            deleteMeeting(meeting)
+                .then(apiResponse => {
+                    swalWithBootstrapButtons.fire(
+                        apiResponse.title,
+                        apiResponse.message,
+                        apiResponse.status
+                    );
+                })
+                .catch(error => console.error(error));
+            swalWithBootstrapButtons.fire(
+                apiResponse.title,
+                apiResponse.message,
+                apiResponse.status
+            )
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            swalWithBootstrapButtons.fire(
+                'Cancelado',
+                'A tua reunião está segura :)',
+                'error'
+            )
+        }
+    })
+}
+
+/**
+ * This function will make an api call to delete meeting by id
+ * @param {object} meeting 
+ * @returns promise to handle response
+ */
 const deleteMeeting = (meeting) => {
-    alert(`You are going to delete meeting -> ${meeting}`);
+    // Return a Promise
+    return new Promise((resolve, reject) => {
+        // Handle API logic here
+        $.ajax({
+            url: 'api/index.php',
+            type: 'DELETE',
+            data: {
+                action: 'delete_meeting',
+                meeting_id: meeting.id
+            },
+            success: (response) => {
+                // Resolve the Promise with the response data
+                resolve(JSON.parse(response));
+            },
+            error: (error) => {
+                console.error(error);
+                // Reject the Promise with the error
+                reject(error);
+            }
+        });
+    });
+};
+
+const generateMeetingHtml = (meeting) => {
+    // Formatted date and time
+    const formattedDate = moment(meeting.data).format('DD/MM/YYYY');
+    const formattedHoraInicio = moment(meeting.hora_inicio, 'HH:mm:ss').format('HH:mm');
+    const formattedHoraFim = moment(meeting.hora_fim, 'HH:mm:ss').format('HH:mm');
+
+    const html = `
+        <h3 style='color: #ed6337'>${meeting.motivo}</h3>
+        <p><strong>Data:</strong> ${formattedDate}</p>
+        <p><strong>Hora: </strong>${formattedHoraInicio}h - ${formattedHoraFim}h</p>
+        <p><strong>Sala:</strong> ${meeting.sala}</p>
+    `;
+
+    return html;
 }
 
 window.onbeforeunload = () => {

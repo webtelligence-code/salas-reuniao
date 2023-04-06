@@ -109,7 +109,7 @@ const populateUsers = (users) => {
         option.innerText = user.NAME;
         option.value = user.NAME
 
-        usersSelect.appendChild(option)
+        usersSelect.appendChild(option) // Append option to select
     });
 
     // Initialize Select2
@@ -122,6 +122,14 @@ const populateUsers = (users) => {
     });
 }
 
+// Function to return selected users on multiple select dropdown
+const getSelectedUsers = () => {
+    const usersSelect = $('#users');
+    const selectedUsers = usersSelect.val();
+    console.log('Selected Users:', selectedUsers);
+    return selectedUsers;
+}
+
 // Function to handle edit/add PHP API
 const submitMeeting = (e) => {
     e.preventDefault();
@@ -132,6 +140,7 @@ const submitMeeting = (e) => {
     const hora_inicio = document.getElementById('hora_inicio').value;
     const duration = parseInt(document.getElementById('duration').value);
     const sala = document.getElementById('sala').value;
+    const guests = getSelectedUsers();
 
     // Calculate hora_fim
     const startTime = new Date(`${data}T${hora_inicio}`);
@@ -141,7 +150,7 @@ const submitMeeting = (e) => {
     const hora_fim = `${endTimeHours.toString().padStart(2, '0')}:${endTimeMinutes.toString().padStart(2, '0')}`;
 
     // Prepare the meeting object
-    const meeting = { motivo, data, hora_inicio, hora_fim, sala };
+    const meeting = { motivo, data, hora_inicio, hora_fim, sala, guests };
 
     if (selectedMeeting) {
         updateMeeting(meeting) // Update the meeting
@@ -175,9 +184,13 @@ handleDOMLabels(); // Call handleDOMLabels
  */
 const roundToNearestHalfHour = (date) => {
     const minutes = date.getMinutes();
-    const roundedMinutes = (minutes < 30 ? 0 : 30);
+    const roundedMinutes = (minutes < 30 ? 30 : 0);
+    if (roundedMinutes === 0) {
+        date.setHours(date.getHours() + 1) // Increment the hour if the minutes need to be set to 0
+    }
     date.setMinutes(roundedMinutes);
     date.setSeconds(0);
+
     return date;
 }
 
@@ -185,7 +198,10 @@ const roundToNearestHalfHour = (date) => {
 document.addEventListener('DOMContentLoaded', () => {
     const horaInicioInput = document.getElementById('hora_inicio');
     const now = new Date();
-    const nearestHalfHour = roundToNearestHalfHour(now);
+    // Account for the Europe/Lisbon timezone
+    const offsetLisbon = -60; // Europe/Lisbon is UTC+1, so -60 minutes
+    const nowLisbon = new Date(now.getTime() - offsetLisbon * 60 * 1000);
+    const nearestHalfHour = roundToNearestHalfHour(nowLisbon);
     const timeString = nearestHalfHour.toISOString().substr(11, 5);
     horaInicioInput.value = timeString;
 });
