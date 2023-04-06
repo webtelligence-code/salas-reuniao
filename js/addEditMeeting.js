@@ -1,9 +1,12 @@
 // Grab all DOM id elems
 const selectedMeeting = JSON.parse(localStorage.getItem('selectedMeeting'));
+const organizador = JSON.parse(localStorage.getItem('organizador'));
 const meetingForm = document.getElementById('meeting-form');
 const formTitle = document.getElementById('form-title');
 const addEditMeetingbtn = document.getElementById('add-edit-meeting-btn');
 const cancelBtn = document.getElementById('cancel-btn');
+
+console.log(organizador)
 
 const setMinimumDate = () => {
     const dateInput = document.getElementById('data');
@@ -14,6 +17,34 @@ const setMinimumDate = () => {
     dateInput.setAttribute('min', minDate);
 }
 setMinimumDate();
+
+/**
+ * This function will calculate the nearest half hour to hora_inicio value
+ * @param {date object} date 
+ * @returns next date
+ */
+const roundToNearestHalfHour = (date) => {
+    const minutes = date.getMinutes();
+    const roundedMinutes = (minutes < 30 ? 30 : 0);
+    if (roundedMinutes === 0) {
+        date.setHours(date.getHours() + 1) // Increment the hour if the minutes need to be set to 0
+    }
+    date.setMinutes(roundedMinutes);
+    date.setSeconds(0);
+
+    return date;
+}
+
+const setHoraInicio = () => {
+    const horaInicioInput = document.getElementById('hora_inicio');
+    const now = new Date();
+    // Account for the Europe/Lisbon timezone
+    const offsetLisbon = -60; // Europe/Lisbon is UTC+1, so -60 minutes
+    const nowLisbon = new Date(now.getTime() - offsetLisbon * 60 * 1000);
+    const nearestHalfHour = roundToNearestHalfHour(nowLisbon);
+    const timeString = nearestHalfHour.toISOString().substr(11, 5);
+    horaInicioInput.value = timeString;
+}
 
 // Fucntion that will handle labels for the title and button based on action (add/edit)
 const handleDOMLabels = () => {
@@ -49,6 +80,8 @@ const handleFormData = () => {
                 break;
             }
         }
+    } else {
+        setHoraInicio(); // Set next close start time if no meeting object passed
     }
 }
 
@@ -127,12 +160,13 @@ const submitMeeting = (e) => {
     e.preventDefault();
 
     // Get the form data
+    const meeting_id = selectedMeeting.id ? selectedMeeting.id : null;
     const motivo = document.getElementById('motivo').value;
     const data = document.getElementById('data').value;
     const hora_inicio = document.getElementById('hora_inicio').value;
     const duration = parseInt(document.getElementById('duration').value);
     const sala = document.getElementById('sala').value;
-    const guests = $('#users').val();
+    const participantes = $('#users').val();
 
     // Calculate hora_fim
     const startTime = new Date(`${data}T${hora_inicio}`);
@@ -142,7 +176,7 @@ const submitMeeting = (e) => {
     const hora_fim = `${endTimeHours.toString().padStart(2, '0')}:${endTimeMinutes.toString().padStart(2, '0')}`;
 
     // Prepare the meeting object
-    const meeting = { motivo, data, hora_inicio, hora_fim, sala, guests };
+    const meeting = { meeting_id, motivo, data, hora_inicio, hora_fim, organizador, sala, participantes };
 
     if (selectedMeeting) {
         updateMeeting(meeting) // Update the meeting
@@ -153,14 +187,65 @@ const submitMeeting = (e) => {
 
 // Function that will handle the meeting update
 // It will call PHP API to handle update on database
-const updateMeeting = (meeting) => {
-    console.log('You are going to update the meeting ->', meeting)
+const updateMeeting = async (meeting) => {
+    console.log(meeting)
+    $.ajax({
+        url: 'api/index.php',
+        type: 'POST',
+        data: {
+            action: 'update_meeting',
+            meeting: JSON.stringify(meeting)
+        },
+        success: (response) => {
+            const parsedResponse = JSON.parse(response);
+            popupSweetAlert(parsedResponse);
+        },
+        error: (error) => {
+            console.error(error);
+        }
+    });
 }
 
 // Function that will handle add new meeting
 // It will call PHP API to handle insert into database
-const addMeeting = (meeting) => {
-    console.log('You are going to create a new meeting ->', meeting)
+const addMeeting = async (meeting) => {
+    $.ajax({
+        url: 'api/index.php',
+        type: 'POST',
+        data: {
+            action: 'add_meeting',
+            meeting: JSON.stringify(meeting)
+        },
+        success: (response) => {
+            const parsedResponse = JSON.parse(response);
+            popupSweetAlert(parsedResponse);
+        },
+        error: (error) => {
+            console.error(error);
+        }
+    });
+}
+
+const popupSweetAlert = (response) => {
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: 'btn btn-success ms-1',
+            cancelButton: 'btn btn-danger'
+        },
+        buttonsStyling: false
+    })
+
+    swalWithBootstrapButtons.fire({
+        title: response.title,
+        text: response.message,
+        icon: response.status,
+        showCancelButton: false,
+        confirmButtonText: 'Ok',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = 'index.html'
+        }
+    });
 }
 
 const cancelAddEditMeeting = () => {
@@ -168,35 +253,6 @@ const cancelAddEditMeeting = () => {
 }
 
 handleDOMLabels(); // Call handleDOMLabels
-
-/**
- * This function will calculate the nearest half hour to hora_inicio value
- * @param {date object} date 
- * @returns next date
- */
-const roundToNearestHalfHour = (date) => {
-    const minutes = date.getMinutes();
-    const roundedMinutes = (minutes < 30 ? 30 : 0);
-    if (roundedMinutes === 0) {
-        date.setHours(date.getHours() + 1) // Increment the hour if the minutes need to be set to 0
-    }
-    date.setMinutes(roundedMinutes);
-    date.setSeconds(0);
-
-    return date;
-}
-
-// Set the initial value of the time input to the nearest half-hour
-document.addEventListener('DOMContentLoaded', () => {
-    const horaInicioInput = document.getElementById('hora_inicio');
-    const now = new Date();
-    // Account for the Europe/Lisbon timezone
-    const offsetLisbon = -60; // Europe/Lisbon is UTC+1, so -60 minutes
-    const nowLisbon = new Date(now.getTime() - offsetLisbon * 60 * 1000);
-    const nearestHalfHour = roundToNearestHalfHour(nowLisbon);
-    const timeString = nearestHalfHour.toISOString().substr(11, 5);
-    horaInicioInput.value = timeString;
-});
 
 // Event listener for form submit
 meetingForm.addEventListener('submit', (e) => submitMeeting(e));

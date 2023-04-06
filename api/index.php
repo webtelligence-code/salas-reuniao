@@ -49,7 +49,7 @@ switch ($method) {
                 break;
         }
 
-        echo $json_encode($response); // return $response
+        echo json_encode($response); // return $response
         break;
 
         // DELETE REQUESTS

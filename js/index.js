@@ -1,17 +1,16 @@
 let sessionUsername;
-
 // Meetings array
 const meetings = [];
-
 // Grab the add meeting button id
 const addMeetingBtn = document.getElementById('add-meeting-btn');
 // Grab root container that will be populated with the meetings
 const meetingsContainer = document.getElementById('meetings-container');
 // Grab theloading overlay div
 const loadingOverlay = document.getElementById('loading-overlay');
-
+// Event listener for add meeting button
 addMeetingBtn.addEventListener('click', () => goToAddEditMeetingPage(null));
 
+// This function will get current session username
 const getSessionUsername = () => {
     loadingOverlay.style.display = 'block'; // Show loading overlay
     $.get('api/index.php?action=get_username', (data, status) => {
@@ -64,7 +63,7 @@ const populateMeetingsContainer = () => {
 
         // If true, show edit/delete buttons
         const editDeleteButtons = showEditDeleteButtons ? `
-            <div class='col-sm-12 col-md mt-3'>
+            <div class='col-sm-12 mt-3'>
                 <button id='edit-meeting-${index}' class='btn btn-primary'>Editar</button>
                 <button id='delete-meeting-${index}' class='btn btn-danger'>Remover</button>
             </div>
@@ -121,6 +120,7 @@ const goToAddEditMeetingPage = (meeting) => {
     } else {
         localStorage.removeItem('selectedMeeting'); // Remove localStorage object set if meeting object is null
     }
+    localStorage.setItem('organizador', JSON.stringify(sessionUsername));
     window.location.href = 'addEditMeeting.html'; // Navigate to add/edit meeting
 }
 
