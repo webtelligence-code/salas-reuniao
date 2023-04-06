@@ -9,6 +9,8 @@ include 'functions.php';
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
+
+        // GET REQUESTS
     case 'GET':
         $get_action = isset($_GET['action']) ? $_GET['action'] : '';
         switch ($get_action) {
@@ -30,7 +32,27 @@ switch ($method) {
                 break;
         }
         break;
-        // Case for delete meeting by id
+
+        // POST REQUESTS
+    case 'POST':
+        $post_action = isset($_POST['action']) ? $_POST['action'] : '';
+        $response = null;
+
+        switch ($post_action) {
+            case 'add_meeting':
+                $meeting = json_decode($_POST['meeting'], true);
+                $response = addMeeting($meeting);
+                break;
+            case 'update_meeting':
+                $meeting = json_decode($_POST['meeting'], true);
+                $response = updateMeeting($meeting);
+                break;
+        }
+
+        echo $json_encode($response); // return $response
+        break;
+
+        // DELETE REQUESTS
     case 'DELETE':
         parse_str(file_get_contents("php://input"), $_DELETE);
         $delete_action = isset($_DELETE['action']) ? $_DELETE['action'] : '';
@@ -42,20 +64,20 @@ switch ($method) {
                     $result = deleteMeeting($meeting_id);
                     if ($result) {
                         $response = [
-                            'status' => 'success', 
+                            'status' => 'success',
                             'message' => 'Reunião removida com sucesso!',
                             'title' => 'Removida!'
                         ];
                     } else {
                         $response = [
-                            'status' => 'error', 
+                            'status' => 'error',
                             'message' => 'Erro ao remover reunião da base de dados.',
                             'title' => 'Erro ao remover.'
                         ];
                     }
                 } else {
                     $response = [
-                        'status' => 'error', 
+                        'status' => 'error',
                         'message' => 'É necessário o id da reunião.',
                         'title' => 'ID em falta.'
                     ];

@@ -20,6 +20,7 @@ const getSessionUsername = () => {
             const parsedData = JSON.parse(data)
             console.log('USERNAME =>', parsedData);
             sessionUsername = parsedData
+            getMeetings();
         } else {
             // API call error
             alert('Failed to fetch session username');
@@ -32,7 +33,7 @@ getSessionUsername(); // Grab the current session USERNAME via ajax call
 const getMeetings = () => {
     $.get('api/index.php?action=get_meetings', (data, status) => {
         if (status === 'success') {
-            // Api call success
+            // Api call success       
             console.log(data) // Log result
             const parsedData = JSON.parse(data); // Parse json data
             parsedData.forEach(meeting => {
@@ -44,11 +45,10 @@ const getMeetings = () => {
         }
     })
 }
-getMeetings(); // Call getMeetings to fetch all meetings available on database
 
 // Function to populate meetings container
 const populateMeetingsContainer = () => {
-    meetingsContainer.innerHTML = ''; // CLear meetingsContainer inner HTML
+    meetingsContainer.innerHTML = ''; // Clear meetingsContainer inner HTML
 
     // Loop through meetings array and populate each meeting
     meetings.forEach((meeting, index) => {
@@ -150,18 +150,19 @@ const alertDelete = (meeting) => {
         if (result.isConfirmed) {
             deleteMeeting(meeting)
                 .then(apiResponse => {
-                    swalWithBootstrapButtons.fire(
-                        apiResponse.title,
-                        apiResponse.message,
-                        apiResponse.status
-                    );
+                    swalWithBootstrapButtons.fire({
+                        title: apiResponse.title,
+                        text: apiResponse.message,
+                        icon: apiResponse.status,
+                        showCancelButton: false,
+                        confirmButtonText: 'Ok',
+                    }).then((result) => {
+                        if(result.isConfirmed) {
+                            window.location.reload()
+                        }
+                    });
                 })
                 .catch(error => console.error(error));
-            swalWithBootstrapButtons.fire(
-                apiResponse.title,
-                apiResponse.message,
-                apiResponse.status
-            )
         } else if (result.dismiss === Swal.DismissReason.cancel) {
             swalWithBootstrapButtons.fire(
                 'Cancelado',

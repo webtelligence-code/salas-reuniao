@@ -24,7 +24,8 @@ function getMeetings()
     $sql = 'SELECT reunioes.id, reunioes.motivo, reunioes.data, reunioes.hora_inicio, reunioes.hora_fim, reunioes.organizador, salas.nome 
             AS sala, salas.url_imagem
             FROM reunioes
-            JOIN salas ON reunioes.id_sala = salas.id;
+            JOIN salas ON reunioes.id_sala = salas.id
+            ORDER BY reunioes.data DESC, reunioes.hora_inicio ASC
     ';
     $stmt = $conn->prepare($sql);
     $stmt->execute();
@@ -54,6 +55,14 @@ function getUsers() {
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     return $users;
+}
+
+function addMeeting($meeting) {
+
+}
+
+function updateMeeting($meeting) {
+
 }
 
 /**

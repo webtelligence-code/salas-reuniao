@@ -122,14 +122,6 @@ const populateUsers = (users) => {
     });
 }
 
-// Function to return selected users on multiple select dropdown
-const getSelectedUsers = () => {
-    const usersSelect = $('#users');
-    const selectedUsers = usersSelect.val();
-    console.log('Selected Users:', selectedUsers);
-    return selectedUsers;
-}
-
 // Function to handle edit/add PHP API
 const submitMeeting = (e) => {
     e.preventDefault();
@@ -140,7 +132,7 @@ const submitMeeting = (e) => {
     const hora_inicio = document.getElementById('hora_inicio').value;
     const duration = parseInt(document.getElementById('duration').value);
     const sala = document.getElementById('sala').value;
-    const guests = getSelectedUsers();
+    const guests = $('#users').val();
 
     // Calculate hora_fim
     const startTime = new Date(`${data}T${hora_inicio}`);
