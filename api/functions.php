@@ -58,6 +58,35 @@ function getUsers()
     return $users;
 }
 
+function checkMeetingConflict($id_sala, $data, $hora_inicio, $hora_fim, $id_reuniao)
+{
+    global $conn;
+
+    $sql = 'SELECT * FROM reunioes
+            WHERE id_sala = :id_sala
+            AND data = :data
+            AND ((:hora_inicio >= hora_inicio AND :hora_inicio < hora_fim) OR (hora_inicio >= :hora_inicio AND hora_inicio < :hora_fim))';
+
+    if ($id_reuniao) {
+        $sql .= ' AND id != :id_reuniao';
+    }
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':id_sala', $id_sala);
+    $stmt->bindParam(':data', $data);
+    $stmt->bindParam(':hora_inicio', $hora_inicio);
+    $stmt->bindParam(':hora_fim', $hora_fim);
+
+    if ($id_reuniao) {
+        $stmt->bindParam(':id_reuniao', $id_reuniao);
+    }
+
+    $stmt->execute();
+    $meetings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return count($meetings) > 0;
+}
+
 /**
  * Function that will handle insert a new meeting into the database
  * @param mixed $meeting 
@@ -177,7 +206,21 @@ function deleteMeeting($meeting_id)
         // Commit the transaction
         $conn->commit();
 
-        return $result;
+        if ($result) {
+            $response = [
+                'status' => 'success',
+                'message' => 'Reunião removida com sucesso!',
+                'title' => 'Removida!'
+            ];
+        } else {
+            $response = [
+                'status' => 'error',
+                'message' => 'Erro ao remover reunião da base de dados.',
+                'title' => 'Erro ao remover.'
+            ];
+        }
+
+        return $response;
     } catch (PDOException $e) {
         // Rollback the transaction if there is an error
         $conn->rollBack();

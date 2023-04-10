@@ -15,22 +15,29 @@ switch ($method) {
         $get_action = isset($_GET['action']) ? $_GET['action'] : '';
         switch ($get_action) {
             case 'get_username':
-                $username = getUsername();
-                echo json_encode($username);
+                $response = getUsername();
                 break;
             case 'get_meetings';
-                $meetings = getMeetings();
-                echo json_encode($meetings);
+                $response = getMeetings();
                 break;
             case 'get_rooms':
-                $rooms = getRooms();
-                echo json_encode($rooms);
+                $response = getRooms();
                 break;
             case 'get_users':
-                $users = getUsers();
-                echo json_encode($users);
+                $response = getUsers();
+                break;
+            case 'check_meeting_conflict':
+                $id_sala = isset($_GET['id_sala']) ? $_GET['id_sala'] : '';
+                $data = isset($_GET['data']) ? $_GET['data'] : '';
+                $hora_inicio = isset($_GET['hora_inicio']) ? $_GET['hora_inicio'] : '';
+                $hora_fim = isset($_GET['hora_fim']) ? $_GET['hora_fim'] : '';
+                $id_reuniao = isset($_GET['id_reuniao']) ? $_GET['id_reuniao'] : '';
+
+                $response = checkMeetingConflict($id_sala, $data, $hora_inicio, $hora_fim, $id_reuniao);
                 break;
         }
+
+        echo json_encode($response);
         break;
 
         // POST REQUESTS
@@ -61,20 +68,7 @@ switch ($method) {
             case 'delete_meeting':
                 $meeting_id = isset($_DELETE['meeting_id']) ? $_DELETE['meeting_id'] : '';
                 if ($meeting_id) {
-                    $result = deleteMeeting($meeting_id);
-                    if ($result) {
-                        $response = [
-                            'status' => 'success',
-                            'message' => 'Reunião removida com sucesso!',
-                            'title' => 'Removida!'
-                        ];
-                    } else {
-                        $response = [
-                            'status' => 'error',
-                            'message' => 'Erro ao remover reunião da base de dados.',
-                            'title' => 'Erro ao remover.'
-                        ];
-                    }
+                    $response = deleteMeeting($meeting_id);
                 } else {
                     $response = [
                         'status' => 'error',

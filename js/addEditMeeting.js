@@ -16,7 +16,6 @@ const setMinimumDate = () => {
 
     dateInput.setAttribute('min', minDate);
 }
-setMinimumDate();
 
 /**
  * This function will calculate the nearest half hour to hora_inicio value
@@ -46,9 +45,10 @@ const setHoraInicio = () => {
     horaInicioInput.value = timeString;
 }
 
-// Fucntion that will handle labels for the title and button based on action (add/edit)
-const handleDOMLabels = () => {
-    // This if statement will handle DOM text labels for add/edit
+// Function that will populate the form data inputs
+const handleDOMFormData = () => {
+    setMinimumDate();
+
     let labelText = 'Adicionar Reunião';
     if (selectedMeeting) {
         labelText = 'Editar Reunião';
@@ -56,13 +56,10 @@ const handleDOMLabels = () => {
     document.title = labelText
     formTitle.innerText = labelText
     addEditMeetingbtn.innerText = labelText;
-    handleFormData(); // Set data in the forms
-}
 
-// Function that will populate the form data inputs
-const handleFormData = () => {
     getRooms();
     getUsers();
+
     if (selectedMeeting) {
         document.getElementById('motivo').value = selectedMeeting.motivo;
         document.getElementById('data').value = selectedMeeting.data;
@@ -156,16 +153,17 @@ const populateUsers = (users) => {
 }
 
 // Function to handle edit/add PHP API
-const submitMeeting = (e) => {
+const submitMeeting = async (e) => {
     e.preventDefault();
 
     // Get the form data
-    const meeting_id = selectedMeeting ? selectedMeeting.id : null;
+    const id_reuniao = selectedMeeting ? selectedMeeting.id : null;
     const motivo = document.getElementById('motivo').value;
     const data = document.getElementById('data').value;
     const hora_inicio = document.getElementById('hora_inicio').value;
     const duration = parseInt(document.getElementById('duration').value);
     const sala = document.getElementById('sala').value;
+    const salaTexto = document.getElementById('sala')
     const participantes = $('#users').val();
 
     // Calculate hora_fim
@@ -176,13 +174,43 @@ const submitMeeting = (e) => {
     const hora_fim = `${endTimeHours.toString().padStart(2, '0')}:${endTimeMinutes.toString().padStart(2, '0')}`;
 
     // Prepare the meeting object
-    const meeting = { meeting_id, motivo, data, hora_inicio, hora_fim, organizador, sala, participantes };
+    const meeting = { id_reuniao, motivo, data, hora_inicio, hora_fim, organizador, sala, participantes };
 
-    if (selectedMeeting) {
-        updateMeeting(meeting) // Update the meeting
+    const conflict = await checkMeetingConflict(sala, data, hora_inicio, hora_fim, id_reuniao);
+
+    const salaSelect = document.getElementById('sala');
+    const roomName = salaSelect.options[salaSelect.selectedIndex].text;
+
+    console.log(conflict)
+
+    if (conflict === 'true') {
+        Swal.fire({
+            icon: 'error',
+            title: 'Conflicto!',
+            text: `Já existe uma reunião agendada para ${roomName} à hora que selecionou. Por favor selecione outra hora ou sala.`,
+        });
     } else {
-        addMeeting(meeting); // Add new meeting
+        if (selectedMeeting) {
+            updateMeeting(meeting) // Update the meeting
+        } else {
+            addMeeting(meeting); // Add new meeting
+        }
     }
+}
+
+
+
+const checkMeetingConflict = async (id_sala, data, hora_inicio, hora_fim, id_reuniao = null) => {
+    const response = await $.get('api/index.php', {
+        action: 'check_meeting_conflict',
+        id_sala,
+        data,
+        hora_inicio,
+        hora_fim,
+        id_reuniao
+    });
+
+    return response;
 }
 
 // Function that will handle the meeting update
@@ -252,7 +280,14 @@ const cancelAddEditMeeting = () => {
     history.back()
 }
 
-handleDOMLabels(); // Call handleDOMLabels
+
+///////////////////////////////////////////////////////////////////////
+// DOM EVENT LISTENERS ////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
+window.addEventListener('DOMContentLoaded', (event) => {
+    handleDOMFormData();
+})
 
 // Event listener for form submit
 meetingForm.addEventListener('submit', (e) => submitMeeting(e));
