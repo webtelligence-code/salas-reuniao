@@ -5,7 +5,7 @@ class DatabaseConnect
     private $server = 'localhost';
     private $dbname = 'amatoscar';
     private $user = 'root';
-    private $pass = 'mbcroot';
+    private $pass = 'matoscarroot';
 
     public function connect()
     {

@@ -1,5 +1,10 @@
 // Grab all DOM id elems
 const selectedMeeting = JSON.parse(localStorage.getItem('selectedMeeting'));
+
+if (selectedMeeting && typeof selectedMeeting.participantes === 'string') {
+    selectedMeeting.participantes = JSON.parse(selectedMeeting.participantes);
+}
+
 const organizador = JSON.parse(localStorage.getItem('organizador'));
 const meetingForm = document.getElementById('meeting-form');
 const formTitle = document.getElementById('form-title');
@@ -134,10 +139,18 @@ const populateRooms = (rooms) => {
 const populateUsers = (users) => {
     const usersSelect = document.getElementById('users');
     console.log(users);
-    users.map((user) => {
+    users.map((user, index) => {
         var option = document.createElement('option');
         option.innerText = user.NAME;
-        option.value = user.NAME
+        option.value = user.NAME;
+
+        // Check if the user is in the selectedGuests array and set the selected attribute
+        if (selectedMeeting) {
+            const trimmedParticipants = selectedMeeting.participantes.map(participant => participant.trim());
+            if(trimmedParticipants.includes(user.NAME.trim())) {
+                option.selected = true;
+            }
+        }
 
         usersSelect.appendChild(option) // Append option to select
     });
@@ -163,7 +176,6 @@ const submitMeeting = async (e) => {
     const hora_inicio = document.getElementById('hora_inicio').value;
     const duration = parseInt(document.getElementById('duration').value);
     const sala = document.getElementById('sala').value;
-    const salaTexto = document.getElementById('sala')
     const participantes = $('#users').val();
 
     // Calculate hora_fim

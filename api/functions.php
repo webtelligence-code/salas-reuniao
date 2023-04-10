@@ -22,7 +22,12 @@ function getMeetings()
 {
     global $conn;
     $sql = 'SELECT reunioes.id, reunioes.motivo, reunioes.data, reunioes.hora_inicio, reunioes.hora_fim, reunioes.organizador, salas.nome 
-            AS sala, salas.url_imagem
+            AS sala, salas.url_imagem,
+            (
+                SELECT GROUP_CONCAT(participantes.nome_participante SEPARATOR \', \')
+                FROM participantes
+                WHERE participantes.id_reuniao = reunioes.id
+            ) AS participantes
             FROM reunioes
             JOIN salas ON reunioes.id_sala = salas.id
             ORDER BY reunioes.data DESC, reunioes.hora_inicio ASC
@@ -30,6 +35,10 @@ function getMeetings()
     $stmt = $conn->prepare($sql);
     $stmt->execute();
     $meetings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($meetings as $key => $meeting) {
+        $meetings[$key]['participantes'] = explode(',', $meeting['participantes']);
+    }
 
     return $meetings;
 }
