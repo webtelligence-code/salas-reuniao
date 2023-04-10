@@ -139,7 +139,7 @@ const populateRooms = (rooms) => {
 const populateUsers = (users) => {
     const usersSelect = document.getElementById('users');
     console.log(users);
-    users.map((user, index) => {
+    users.map((user) => {
         var option = document.createElement('option');
         option.innerText = user.NAME;
         option.value = user.NAME;
