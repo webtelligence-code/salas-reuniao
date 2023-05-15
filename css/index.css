@@ -10,8 +10,8 @@
 }
 
 .add-meeting-btn {
-    border-radius: 15px;
-    background-color: #ed6337;
+    border-radius: 5px;
+    background-color: #388e3c;
     color: white;
     border: none;
     padding: 10px;
@@ -19,6 +19,19 @@
 }
 
 .add-meeting-btn:hover {
+    background-color: #317a35;
+}
+
+.manual-btn {
+    border-radius: 5px;
+    background-color: #ed6337;
+    color: white;
+    border: none;
+    padding: 10px;
+    justify-content: center;
+}
+
+.manual-btn:hover {
     background-color: #f84e15;
 }
 

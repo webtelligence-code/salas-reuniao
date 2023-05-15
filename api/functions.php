@@ -59,7 +59,7 @@ function getRooms()
 function getUsers()
 {
     global $conn;
-    $sql = 'SELECT * FROM users ORDER BY NAME ASC';
+    $sql = 'SELECT * FROM users WHERE ACT = 1 AND COLABORADOR = 1 ORDER BY NAME ASC';
     $stmt = $conn->prepare($sql);
     $stmt->execute();
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);

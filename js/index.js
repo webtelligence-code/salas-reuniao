@@ -3,17 +3,19 @@ let sessionUsername;
 const meetings = [];
 // Grab the add meeting button id
 const addMeetingBtn = document.getElementById('add-meeting-btn');
+const manualBtn = document.getElementById('manual-btn');
 // Grab root container that will be populated with the meetings
 const meetingsContainer = document.getElementById('meetings-container');
 // Grab theloading overlay div
 const loadingOverlay = document.getElementById('loading-overlay');
 // Event listener for add meeting button
 addMeetingBtn.addEventListener('click', () => goToAddEditMeetingPage(null));
+manualBtn.addEventListener('click', () => openUserManual());
 
 // This function will get current session username
 const getSessionUsername = () => {
     loadingOverlay.style.display = 'block'; // Show loading overlay
-    $.get('api/index.php?action=get_username', (data, status) => {
+    $.get(`api/index.php?action=get_username`, (data, status) => {
         if (status === 'success') {
             // API call success
             const parsedData = JSON.parse(data)
@@ -48,6 +50,16 @@ const getMeetings = () => {
 // Function to populate meetings container
 const populateMeetingsContainer = () => {
     meetingsContainer.innerHTML = ''; // Clear meetingsContainer inner HTML
+
+    if (meetings.length === 0) {
+        meetingsContainer.innerHTML = `
+            <div class="alert alert-warning text-center" role="alert">
+                Não há reuniões agendadas.
+            </div>
+        `;
+        loadingOverlay.style.display = 'none'; // Hide loading overlay
+        return;
+    }
 
     // Loop through meetings array and populate each meeting
     meetings.forEach((meeting, index) => {
@@ -124,6 +136,10 @@ const goToAddEditMeetingPage = (meeting) => {
     window.location.href = 'addEditMeeting.html'; // Navigate to add/edit meeting
 }
 
+const openUserManual = () => {
+    window.open('assets/manual/Manual-Salas-Reunião.pdf')
+}
+
 /**
  * Function that will handle alert delete meeting
  * @param {object} meeting 
@@ -157,7 +173,7 @@ const alertDelete = (meeting) => {
                         showCancelButton: false,
                         confirmButtonText: 'Ok',
                     }).then((result) => {
-                        if(result.isConfirmed) {
+                        if (result.isConfirmed) {
                             window.location.reload() // Reload page
                         }
                     });
