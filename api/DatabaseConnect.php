@@ -3,18 +3,20 @@
 class DatabaseConnect
 {
     private $server = 'localhost';
-    private $dbname = 'amatoscar';
-    private $user = 'root';
-    private $pass = 'matoscarroot';
+    private $dbname = 'Stardust';
+    private $user = 'Galen';
+    private $pass = 'kMfp0~456';
 
     public function connect()
     {
-        try {
-            $conn = new PDO('mysql:host=' . $this->server . ';dbname=' . $this->dbname, $this->user, $this->pass);
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            return $conn;
-        } catch (\Exception $e) {
-            echo "Database Error:" . $e->getMessage();
+        $conn = mysqli_connect($this->server, $this->user, $this->pass, $this->dbname);
+
+        if ($conn->connect_error) {
+            die('Database Error:' . $conn->connect_error);
+        } else {
+            $conn->set_charset('utf8');
         }
+
+        return $conn;
     }
 }

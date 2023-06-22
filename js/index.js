@@ -1,3 +1,4 @@
+const API_URL = 'https://amatoscar.pt/GAP/NovasPlataformas/_API/salas-reuniao/index.php';
 let sessionUsername;
 // Meetings array
 const meetings = [];
@@ -15,7 +16,7 @@ manualBtn.addEventListener('click', () => openUserManual());
 // This function will get current session username
 const getSessionUsername = () => {
     loadingOverlay.style.display = 'block'; // Show loading overlay
-    $.get(`api/index.php?action=get_username`, (data, status) => {
+    $.get(`${API_URL}?action=get_username`, (data, status) => {
         if (status === 'success') {
             // API call success
             const parsedData = JSON.parse(data)
@@ -32,7 +33,7 @@ getSessionUsername(); // Grab the current session USERNAME via ajax call
 
 // Function to call api to fetch all meetings
 const getMeetings = () => {
-    $.get('api/index.php?action=get_meetings', (data, status) => {
+    $.get(`${API_URL}?action=get_meetings`, (data, status) => {
         if (status === 'success') {
             // Api call success       
             console.log(data) // Log result
@@ -133,7 +134,7 @@ const goToAddEditMeetingPage = (meeting) => {
         localStorage.removeItem('selectedMeeting'); // Remove localStorage object set if meeting object is null
     }
     localStorage.setItem('organizador', JSON.stringify(sessionUsername));
-    window.location.href = 'addEditMeeting.html'; // Navigate to add/edit meeting
+    window.location.href = 'addEditMeeting.php'; // Navigate to add/edit meeting
 }
 
 const openUserManual = () => {

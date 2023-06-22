@@ -1,6 +1,6 @@
 <?php
 
-include 'DatabaseConnect.php';
+include '../DatabaseConnect.php';
 
 include 'session.php';
 
@@ -21,48 +21,69 @@ function getUsername()
 function getMeetings()
 {
     global $conn;
-    $sql = 'SELECT reunioes.id, reunioes.motivo, reunioes.data, reunioes.hora_inicio, reunioes.hora_fim, reunioes.organizador, salas.nome 
-            AS sala, salas.url_imagem,
-            (
-                SELECT GROUP_CONCAT(participantes.nome_participante SEPARATOR \', \')
-                FROM participantes
-                WHERE participantes.id_reuniao = reunioes.id
-            ) AS participantes
+
+    $sql = 'SELECT reunioes.id, reunioes.motivo, reunioes.data, reunioes.hora_inicio, reunioes.hora_fim, reunioes.organizador, salas.nome AS sala, salas.url_imagem
             FROM reunioes
             JOIN salas ON reunioes.id_sala = salas.id
-            ORDER BY reunioes.data DESC, reunioes.hora_inicio ASC
-    ';
+            ORDER BY reunioes.data DESC, reunioes.hora_inicio ASC';
+    
     $stmt = $conn->prepare($sql);
     $stmt->execute();
-    $meetings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $result = $stmt->get_result();
 
-    foreach ($meetings as $key => $meeting) {
-        $meetings[$key]['participantes'] = explode(',', $meeting['participantes']);
+    $meetings = array();
+    while ($row = $result->fetch_assoc()) {
+        $meeting = $row;
+        
+        $participantsSql = 'SELECT participantes.nome_participante
+                            FROM participantes
+                            WHERE participantes.id_reuniao = ?';
+        $stmt = $conn->prepare($participantsSql);
+        $stmt->bind_param('i', $meeting['id']);
+        $stmt->execute();
+        $participantsResult = $stmt->get_result();
+        
+        $participants = array();
+        while ($participantRow = $participantsResult->fetch_assoc()) {
+            $participants[] = $participantRow['nome_participante'];
+        }
+        
+        $meeting['participantes'] = $participants;
+        
+        $meetings[] = $meeting;
     }
 
     return $meetings;
 }
+
 
 // Function that will fetch all rooms available in the database
 function getRooms()
 {
     global $conn;
     $sql = 'SELECT * FROM salas';
-    $stmt = $conn->prepare($sql);
-    $stmt->execute();
-    $rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $result = mysqli_query($conn, $sql);
+
+    $rooms = array();
+    while ($row = mysqli_fetch_assoc($result)) {
+        $rooms[] = $row;
+    }
 
     return $rooms;
 }
+
 
 // Function that will fetch all users (guests) from the database
 function getUsers()
 {
     global $conn;
     $sql = 'SELECT * FROM users WHERE ACT = 1 AND COLABORADOR = 1 ORDER BY NAME ASC';
-    $stmt = $conn->prepare($sql);
-    $stmt->execute();
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $result = mysqli_query($conn, $sql);
+
+    $users = array();
+    while ($row = mysqli_fetch_assoc($result)) {
+        $users[] = $row;
+    }
 
     return $users;
 }
@@ -72,26 +93,37 @@ function checkMeetingConflict($id_sala, $data, $hora_inicio, $hora_fim, $id_reun
     global $conn;
 
     $sql = 'SELECT * FROM reunioes
-            WHERE id_sala = :id_sala
-            AND data = :data
-            AND ((:hora_inicio >= hora_inicio AND :hora_inicio < hora_fim) OR (hora_inicio >= :hora_inicio AND hora_inicio < :hora_fim))';
+            WHERE id_sala = ?
+            AND data = ?
+            AND ((? >= hora_inicio AND ? < hora_fim) OR (hora_inicio >= ? AND hora_inicio < ?))';
 
     if ($id_reuniao) {
-        $sql .= ' AND id != :id_reuniao';
+        $sql .= ' AND id != ?';
     }
 
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':id_sala', $id_sala);
-    $stmt->bindParam(':data', $data);
-    $stmt->bindParam(':hora_inicio', $hora_inicio);
-    $stmt->bindParam(':hora_fim', $hora_fim);
+    $stmt = mysqli_prepare($conn, $sql);
+    if (!$stmt) {
+        throw new Exception('Error in preparing statement: ' . mysqli_error($conn));
+    }
+
+    mysqli_stmt_bind_param($stmt, 'isssss', $id_sala, $data, $hora_inicio, $hora_inicio, $hora_fim, $hora_inicio);
 
     if ($id_reuniao) {
-        $stmt->bindParam(':id_reuniao', $id_reuniao);
+        mysqli_stmt_bind_param($stmt, 'isssssi', $id_sala, $data, $hora_inicio, $hora_inicio, $hora_fim, $hora_inicio, $id_reuniao);
     }
 
-    $stmt->execute();
-    $meetings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!mysqli_stmt_execute($stmt)) {
+        throw new Exception('Error in executing statement: ' . mysqli_error($conn));
+    }
+
+    $result = mysqli_stmt_get_result($stmt);
+    $meetings = array();
+
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $meetings[] = $row;
+        }
+    }
 
     return count($meetings) > 0;
 }
@@ -107,28 +139,36 @@ function addMeeting($meeting)
     global $conn;
 
     $meetingsSql = 'INSERT INTO reunioes (motivo, data, hora_inicio, hora_fim, organizador, id_sala)
-                    VALUES (:motivo, :data, :hora_inicio, :hora_fim, :organizador, :sala)';
+                    VALUES (?, ?, ?, ?, ?, ?)';
     // Add the meeting to the reunioes table
-    $stmt = $conn->prepare($meetingsSql);
-    $stmt->bindParam(':motivo', $meeting['motivo']);
-    $stmt->bindParam(':data', $meeting['data']);
-    $stmt->bindParam(':hora_inicio', $meeting['hora_inicio']);
-    $stmt->bindParam(':hora_fim', $meeting['hora_fim']);
-    $stmt->bindParam(':organizador', $meeting['organizador']);
-    $stmt->bindParam(':sala', $meeting['sala']);
-    $stmt->execute();
+    $stmt = mysqli_prepare($conn, $meetingsSql);
+    if (!$stmt) {
+        throw new Exception('Error in preparing statement: ' . mysqli_error($conn));
+    }
+
+    mysqli_stmt_bind_param($stmt, 'sssssi', $meeting['motivo'], $meeting['data'], $meeting['hora_inicio'], $meeting['hora_fim'], $meeting['organizador'], $meeting['sala']);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        throw new Exception('Error in executing statement: ' . mysqli_error($conn));
+    }
 
     // Get the id of the inserted meeting
-    $meeting_id = $conn->lastInsertId();
+    $meeting_id = mysqli_insert_id($conn);
 
     $guestsSql = 'INSERT INTO participantes (id_reuniao, nome_participante)
-                    VALUES (:id_reuniao, :nome_participante)';
+                    VALUES (?, ?)';
     // Add the guests to the participantes table
     foreach ($meeting['participantes'] as $participante) {
-        $stmt = $conn->prepare($guestsSql);
-        $stmt->bindParam(':id_reuniao', $meeting_id);
-        $stmt->bindParam(':nome_participante', $participante);
-        $stmt->execute();
+        $stmt = mysqli_prepare($conn, $guestsSql);
+        if (!$stmt) {
+            throw new Exception('Error in preparing statement: ' . mysqli_error($conn));
+        }
+
+        mysqli_stmt_bind_param($stmt, 'is', $meeting_id, $participante);
+
+        if (!mysqli_stmt_execute($stmt)) {
+            throw new Exception('Error in executing statement: ' . mysqli_error($conn));
+        }
     }
 
     return [
@@ -149,33 +189,47 @@ function updateMeeting($meeting)
     global $conn;
 
     $meetingSql = 'UPDATE reunioes 
-                    SET motivo = :motivo, data = :data, hora_inicio = :hora_inicio, hora_fim = :hora_fim, organizador = :organizador, id_sala = :sala 
-                    WHERE id = :id';
+                    SET motivo = ?, data = ?, hora_inicio = ?, hora_fim = ?, organizador = ?, id_sala = ? 
+                    WHERE id = ?';
     // Update the meeting in the reunioes table
-    $stmt = $conn->prepare($meetingSql);
-    $stmt->bindParam(':motivo', $meeting['motivo']);
-    $stmt->bindParam(':data', $meeting['data']);
-    $stmt->bindParam(':hora_inicio', $meeting['hora_inicio']);
-    $stmt->bindParam(':hora_fim', $meeting['hora_fim']);
-    $stmt->bindParam(':organizador', $meeting['organizador']);
-    $stmt->bindParam(':sala', $meeting['sala']);
-    $stmt->bindParam(':id', $meeting['meeting_id']);
-    $stmt->execute();
+    $stmt = mysqli_prepare($conn, $meetingSql);
+    if (!$stmt) {
+        throw new Exception('Error in preparing statement: ' . mysqli_error($conn));
+    }
 
-    $deleteGuestsSql = 'DELETE FROM participantes WHERE id_reuniao = :id_reuniao';
+    mysqli_stmt_bind_param($stmt, 'ssssssi', $meeting['motivo'], $meeting['data'], $meeting['hora_inicio'], $meeting['hora_fim'], $meeting['organizador'], $meeting['sala'], $meeting['meeting_id']);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        throw new Exception('Error in executing statement: ' . mysqli_error($conn));
+    }
+
+    $deleteGuestsSql = 'DELETE FROM participantes WHERE id_reuniao = ?';
     // Delete the existing guests in the guests table
-    $stmt = $conn->prepare($deleteGuestsSql);
-    $stmt->bindParam(':id_reuniao', $meeting['meeting_id']);
-    $stmt->execute();
+    $stmt = mysqli_prepare($conn, $deleteGuestsSql);
+    if (!$stmt) {
+        throw new Exception('Error in preparing statement: ' . mysqli_error($conn));
+    }
+
+    mysqli_stmt_bind_param($stmt, 'i', $meeting['meeting_id']);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        throw new Exception('Error in executing statement: ' . mysqli_error($conn));
+    }
 
     $updateGuestsSql = 'INSERT INTO participantes (id_reuniao, nome_participante) 
-                        VALUES (:id_reuniao, :nome_participante)';
+                        VALUES (?, ?)';
     // Add the updated guests to the guests table
     foreach ($meeting['participantes'] as $participante) {
-        $stmt = $conn->prepare($updateGuestsSql);
-        $stmt->bindParam(':id_reuniao', $meeting['meeting_id']);
-        $stmt->bindParam(':nome_participante', $participante);
-        $stmt->execute();
+        $stmt = mysqli_prepare($conn, $updateGuestsSql);
+        if (!$stmt) {
+            throw new Exception('Error in preparing statement: ' . mysqli_error($conn));
+        }
+
+        mysqli_stmt_bind_param($stmt, 'is', $meeting['meeting_id'], $participante);
+
+        if (!mysqli_stmt_execute($stmt)) {
+            throw new Exception('Error in executing statement: ' . mysqli_error($conn));
+        }
     }
 
     return [
@@ -184,6 +238,7 @@ function updateMeeting($meeting)
         'title' => 'Atualizada!'
     ];
 }
+
 
 /**
  * This function will handle a transaction to delete meeting in reunioes table
@@ -198,22 +253,30 @@ function deleteMeeting($meeting_id)
 
     try {
         // Start a transaction
-        $conn->beginTransaction();
+        mysqli_begin_transaction($conn);
 
         // Delete the associated guests
-        $guestsSql = 'DELETE FROM participantes WHERE id_reuniao = :meeting_id';
-        $stmt = $conn->prepare($guestsSql);
-        $stmt->bindParam(':meeting_id', $meeting_id, PDO::PARAM_INT);
-        $stmt->execute();
+        $guestsSql = 'DELETE FROM participantes WHERE id_reuniao = ?';
+        $stmt = mysqli_prepare($conn, $guestsSql);
+        if (!$stmt) {
+            throw new Exception('Error in preparing statement: ' . mysqli_error($conn));
+        }
+        mysqli_stmt_bind_param($stmt, 'i', $meeting_id);
+        if (!mysqli_stmt_execute($stmt)) {
+            throw new Exception('Error in executing statement: ' . mysqli_error($conn));
+        }
 
         // Delete the meeting
-        $meetingsSql = 'DELETE FROM reunioes WHERE ID = :meeting_id';
-        $stmt = $conn->prepare($meetingsSql);
-        $stmt->bindParam(':meeting_id', $meeting_id, PDO::PARAM_INT);
-        $result = $stmt->execute();
+        $meetingsSql = 'DELETE FROM reunioes WHERE ID = ?';
+        $stmt = mysqli_prepare($conn, $meetingsSql);
+        if (!$stmt) {
+            throw new Exception('Error in preparing statement: ' . mysqli_error($conn));
+        }
+        mysqli_stmt_bind_param($stmt, 'i', $meeting_id);
+        $result = mysqli_stmt_execute($stmt);
 
         // Commit the transaction
-        $conn->commit();
+        mysqli_commit($conn);
 
         if ($result) {
             $response = [
@@ -230,9 +293,9 @@ function deleteMeeting($meeting_id)
         }
 
         return $response;
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         // Rollback the transaction if there is an error
-        $conn->rollBack();
+        mysqli_rollback($conn);
         error_log('Error while deleting meeting: ' . $e->getMessage());
     }
 }
