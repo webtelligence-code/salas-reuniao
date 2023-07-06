@@ -14,7 +14,7 @@
     background-color: #388e3c;
     color: white;
     border: none;
-    padding: 10px;
+    padding: 5px;
     justify-content: center;
 }
 
@@ -27,7 +27,7 @@
     background-color: #ed6337;
     color: white;
     border: none;
-    padding: 10px;
+    padding: 5px;
     justify-content: center;
 }
 
@@ -44,6 +44,11 @@
 }
 
 .c-card {
+    border: #ed6337 1px solid;
+}
+
+.rowBorders {
+    border-radius: 5px;
     border: #ed6337 1px solid;
 }
 
